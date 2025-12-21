@@ -7,35 +7,37 @@ export async function POST(request) {
   await connectionToDatabase();
 
   try {
-    const { orderId, rest } = await request.json();
+    // 1. Get the MongoDB ID (sent from frontend as 'orderId') and the rest location
+    const { orderId: mongoId, rest } = await request.json();
 
-    if (!orderId) {
-      return NextResponse.json({ success: false, message: "Order ID is required" }, { status: 400 });
+    if (!mongoId) {
+      return NextResponse.json({ success: false, message: "ID is required" }, { status: 400 });
     }
 
-    const order = await Order.findById(orderId);
+    // 2. Find the order using the MongoDB ID
+    const order = await Order.findById(mongoId);
     if (!order) {
       return NextResponse.json({ success: false, message: "Order not found" }, { status: 404 });
     }
 
-    // --- CRITICAL FIX START ---
     const orderData = order.toObject();
 
-    // 1. Assign the old _id to the 'orderId' field so it is not null
+    // 3. Prepare the new entry
     const newEntryData = {
-      ...orderData,
-      orderId: orderData._id, // Map the ID here
-      rest: rest
+      ...orderData,       // 👈 This copies everything, INCLUDING the original 'orderId'
+      rest: rest          // Adds the restaurant location
     };
 
-    // 2. Remove the original _id and __v so AcceptedOrder generates a fresh unique ID
+    // 4. Remove the old database _id so a new one is created
+    // (We do NOT touch 'orderId', so it stays the same as before!)
     delete newEntryData._id;
     delete newEntryData.__v;
 
+    // 5. Create in Accepted collection
     await AcceptedOrder.create(newEntryData);
-    // --- CRITICAL FIX END ---
 
-    await Order.findByIdAndDelete(orderId);
+    // 6. Delete from old collection
+    await Order.findByIdAndDelete(mongoId);
 
     return NextResponse.json({ success: true, message: "Order accepted and moved" });
   } catch (err) {

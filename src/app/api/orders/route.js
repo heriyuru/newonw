@@ -22,6 +22,7 @@ export async function GET(request) {
       orderDate: order.orderDate,
       totalCount: order.totalCount,
       totalPrice: order.totalPrice,
+      orderId: order.orderId,
       
       
       items: Array.isArray(order.items) ? order.items : []

@@ -108,7 +108,7 @@ export default function OrdersList() {
       ) : (
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {orders.map((order) => (
-            <li 
+            <li
               key={order._id}
               style={{
                 marginBottom: '12px',
@@ -128,9 +128,12 @@ export default function OrdersList() {
                   ))}
                 </ul>
               ) : <p>No items found in this order.</p>}
-              
+
               <p><strong>Total Price:</strong> ₹{order.totalPrice}</p>
               <p><strong>User ID:</strong> {order.userId}</p>
+              <p style={{ fontSize: '1.1em', color: '#333' }}>
+                Order ID: {order.orderId}
+              </p>
               {order.orderDate && <p><strong>Ordered On:</strong> {new Date(order.orderDate).toLocaleString()}</p>}
 
               <button

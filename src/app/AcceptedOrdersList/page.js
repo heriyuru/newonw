@@ -66,6 +66,9 @@ export default function AcceptedOrdersList() {
               <p><strong>Total Price:</strong> ₹{order.totalPrice}</p>
               <p><strong>Status:</strong> {order.status || "active"}</p>
               <p><strong>Item(s):</strong></p>
+                <p style={{ fontSize: '1.1em', color: '#333' }}>
+                Order ID: {order.orderId}
+              </p>
 
               {Array.isArray(order.items) && order.items.length > 0 ? (
                 <ul>

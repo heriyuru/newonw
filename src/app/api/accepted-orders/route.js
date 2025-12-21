@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import connectionToDatabase from "../../../../lib/mongoose";
+import connectDB from "../../../../lib/mongoose";
 import AcceptedOrder from "../../../../models/AcceptedOrder";
 
 export async function GET(request) {
-  await connectionToDatabase();
+  await connectDB();
 
   try {
     const { searchParams } = new URL(request.url);
@@ -26,6 +26,7 @@ export async function GET(request) {
       acceptedAt: order.acceptedAt,
       totalCount: order.totalCount,
       totalPrice: order.totalPrice,
+      orderId: order.orderId,
       items: Array.isArray(order.items) ? order.items : []
     }));
 
