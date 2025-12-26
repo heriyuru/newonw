@@ -2,90 +2,89 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import Link from 'next/link';
 
 export default function AcceptedOrdersList() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch orders
   useEffect(() => {
     const restaurantId = localStorage.getItem("restid");
 
     if (!restaurantId) {
-      alert("No Restaurant ID found in localStorage");
+      alert("Restaurant ID missing");
       setLoading(false);
       return;
     }
 
-    const fetchAcceptedOrders = async () => {
+    const fetchOrders = async () => {
       try {
-        const res = await axios.get(`/api/accepted-orders?restaurantId=${restaurantId}`);
+        const res = await axios.get(
+          `/api/accepted-orders?restaurantId=${restaurantId}`
+        );
 
         if (res.data.success) {
           setOrders(res.data.orders);
-        } else {
-          alert("Failed to fetch accepted orders");
         }
       } catch (err) {
-        console.error("Fetch accepted orders error:", err);
-        alert("Something went wrong.");
+        console.error(err);
+        alert("Failed to fetch orders");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAcceptedOrders();
+    fetchOrders();
   }, []);
 
-
-
-  if (loading) return <p>Loading accepted orders...</p>;
+  if (loading) return <p>Loading...</p>;
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: "20px" }}>
       <h2>✅ Accepted Orders</h2>
 
       {orders.length === 0 ? (
-        <p>No accepted orders found.</p>
+        <p>No orders found</p>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {orders.map((order) => (
-            <li
-              key={order._id}
+        orders.map(order => (
+          <div
+            key={order._id}
+            style={{
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+              padding: "12px",
+              marginBottom: "15px"
+            }}
+          >
+            <p><strong>Order ID:</strong> {order.orderId}</p>
+            <p><strong>Total:</strong> ₹{order.totalPrice}</p>
+
+            <ul>
+              {order.items.map((item, i) => (
+                <li key={i}>
+                  {item.name} × {item.quantity} — ₹{item.price}
+                </li>
+              ))}
+            </ul>
+
+            {/* PRINT BUTTON */}
+            <Link
+              href={`/invoice/${order._id}`}
+              target="_blank"
               style={{
-                marginBottom: '12px',
-                padding: '10px',
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                backgroundColor: '#f0fff0',
+                backgroundColor: "#2196F3",
+                color: "#fff",
+                padding: "8px 14px",
+                borderRadius: "6px",
+                textDecoration: "none",
+                display: "inline-block",
+                marginTop: "8px"
               }}
             >
-              <p><strong>User ID:</strong> {order.userId}</p>
-              <p><strong>Order Date:</strong> {new Date(order.orderDate).toLocaleString()}</p>
-              <p><strong>Accepted On:</strong> {order.acceptedAt ? new Date(order.acceptedAt).toLocaleString() : 'N/A'}</p>
-              <p><strong>Total Price:</strong> ₹{order.totalPrice}</p>
-              <p><strong>Status:</strong> {order.status || "active"}</p>
-              <p><strong>Item(s):</strong></p>
-                <p style={{ fontSize: '1.1em', color: '#333' }}>
-                Order ID: {order.orderId}
-              </p>
-
-              {Array.isArray(order.items) && order.items.length > 0 ? (
-                <ul>
-                  {order.items.map((item, idx) => (
-                    <li key={idx}>
-                      {item.name} — ₹{item.price} × {item.quantity}
-                    </li>
-                  ))}
-                     
-                 
-                </ul>
-              ) : (
-                <p>No items found</p>
-              )}
-            </li>
-          ))}
-        </ul>
+              🖨 Print Invoice
+            </Link>
+          </div>
+        ))
       )}
     </div>
   );
